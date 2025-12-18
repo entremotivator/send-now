@@ -214,9 +214,10 @@ with st.sidebar:
             placeholder="Enter subject...",
             value="Test Email"
         )
-        quick_email = st.text_input(
-            "Email",
-            placeholder="Enter email address..."
+        quick_email = st.text_area(
+            "Email Content",
+            placeholder="Enter your email message...",
+            height=150
         )
         
         quick_submit = st.form_submit_button(
