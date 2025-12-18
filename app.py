@@ -45,7 +45,7 @@ st.markdown('<div class="main-header"><h1>📧 CSV to Google Sheets & Email Send
 
 # Configuration
 WEBHOOK_URL = "https://agentonline-u29564.vm.elestio.app/webhook/192d43hooksend"
-TEST_WEBHOOK_URL = "https://agentonline-u29564.vm.elestio.app/webhook-test/192d43hooksend"
+TEST_WEBHOOK_URL = "https://agentonline-u29564.vm.elestio.app/webhook/192d43hooksend"
 GOOGLE_SHEETS_URL = "https://docs.google.com/spreadsheets/d/1CaZR5y2NgccRjJ4P_I-77KXJF9Hb_4AI8wfqI4Q_6K8/edit?gid=0#gid=0"
 SHEETS_API_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"  # You'll need to set up Apps Script
 
