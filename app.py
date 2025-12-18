@@ -238,7 +238,7 @@ with st.sidebar:
                 with st.spinner("Sending..."):
                     try:
                         response = requests.post(
-                            "https://agentonline-u29564.vm.elestio.app/webhook-test/192d43hooksend",
+                            "https://agentonline-u29564.vm.elestio.app/webhook/192d43hooksend",
                             json=quick_data,
                             timeout=10
                         )
