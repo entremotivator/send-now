@@ -203,6 +203,62 @@ with st.sidebar:
         "Email Subject",
         value=st.session_state.email_subject
     )
+    
+    st.markdown("---")
+    st.markdown("### 📧 Quick Send Form")
+    st.caption("Send email to webhook")
+    
+    with st.form("quick_send_form"):
+        quick_subject = st.text_input(
+            "Subject",
+            placeholder="Enter subject...",
+            value="Test Email"
+        )
+        quick_email = st.text_input(
+            "Email",
+            placeholder="Enter email address..."
+        )
+        
+        quick_submit = st.form_submit_button(
+            "🚀 Send to Webhook",
+            use_container_width=True
+        )
+        
+        if quick_submit:
+            if not quick_subject or not quick_email:
+                st.error("⚠️ Fill both fields!")
+            else:
+                # Prepare data
+                quick_data = {
+                    "subject": quick_subject,
+                    "email": quick_email
+                }
+                
+                with st.spinner("Sending..."):
+                    try:
+                        response = requests.post(
+                            "https://agentonline-u29564.vm.elestio.app/webhook-test/192d43hooksend",
+                            json=quick_data,
+                            timeout=10
+                        )
+                        
+                        if response.status_code == 200:
+                            st.success("✅ Sent!")
+                            with st.expander("📄 Response"):
+                                try:
+                                    st.json(response.json())
+                                except:
+                                    st.text(response.text)
+                        else:
+                            st.error(f"❌ Error {response.status_code}")
+                            st.text(response.text)
+                            
+                    except requests.exceptions.Timeout:
+                        st.error("❌ Timeout")
+                    except requests.exceptions.ConnectionError:
+                        st.error("❌ Connection error")
+                    except Exception as e:
+                        st.error(f"❌ Error: {str(e)}")
 
 # Main content tabs
 tab1, tab2, tab3, tab4 = st.tabs(["📁 Upload CSV", "👁️ Preview Email", "📤 Send Emails", "📊 View Data"])
