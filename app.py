@@ -307,32 +307,94 @@ with tab1:
 
 # TAB 2: Preview Email
 with tab2:
-    st.header("Email Template Preview")
+    st.header("Email Template Preview & Editor")
     
-    if st.session_state.uploaded_data is not None and len(st.session_state.uploaded_data) > 0:
-        # Select a contact for preview
-        preview_idx = st.selectbox(
-            "Select contact for preview:",
-            range(len(st.session_state.uploaded_data)),
-            format_func=lambda x: f"{st.session_state.uploaded_data.iloc[x]['name']} ({st.session_state.uploaded_data.iloc[x]['email']})"
+    # Create two columns - code editor and preview
+    col_left, col_right = st.columns([1, 1], gap="large")
+    
+    with col_left:
+        st.subheader("📝 HTML Code Editor")
+        
+        # Initialize email template in session state if not exists
+        if 'email_template' not in st.session_state:
+            st.session_state.email_template = DEFAULT_EMAIL_TEMPLATE
+        
+        # Text area for HTML editing
+        edited_template = st.text_area(
+            "Edit HTML Template:",
+            value=st.session_state.email_template,
+            height=600,
+            help="Use {name} as placeholder for recipient name",
+            label_visibility="collapsed"
         )
         
-        selected_contact = st.session_state.uploaded_data.iloc[preview_idx]
+        # Update session state
+        st.session_state.email_template = edited_template
         
-        # Replace placeholders
-        preview_html = DEFAULT_EMAIL_TEMPLATE.replace("{name}", selected_contact['name'])
+        # Action buttons
+        btn_col1, btn_col2, btn_col3 = st.columns(3)
         
-        st.subheader(f"Preview for: {selected_contact['name']}")
+        with btn_col1:
+            if st.button("🔄 Reset to Default", use_container_width=True):
+                st.session_state.email_template = DEFAULT_EMAIL_TEMPLATE
+                st.rerun()
+        
+        with btn_col2:
+            if st.button("💾 Save Template", use_container_width=True):
+                st.success("✅ Template saved!")
+        
+        with btn_col3:
+            # Download template
+            st.download_button(
+                label="📥 Download HTML",
+                data=st.session_state.email_template,
+                file_name=f"email_template_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
+                mime="text/html",
+                use_container_width=True
+            )
+        
+        # Template info
+        with st.expander("ℹ️ Template Variables"):
+            st.markdown("""
+            **Available Placeholders:**
+            - `{name}` - Recipient's name
+            
+            **Tips:**
+            - Keep the HTML structure intact
+            - Test your changes in the preview
+            - Use inline CSS for better email client compatibility
+            """)
+    
+    with col_right:
+        st.subheader("👁️ Live Preview")
+        
+        if st.session_state.uploaded_data is not None and len(st.session_state.uploaded_data) > 0:
+            # Select a contact for preview
+            preview_idx = st.selectbox(
+                "Select contact for preview:",
+                range(len(st.session_state.uploaded_data)),
+                format_func=lambda x: f"{st.session_state.uploaded_data.iloc[x]['name']} ({st.session_state.uploaded_data.iloc[x]['email']})"
+            )
+            
+            selected_contact = st.session_state.uploaded_data.iloc[preview_idx]
+            
+            # Replace placeholders
+            preview_html = st.session_state.email_template.replace("{name}", selected_contact['name'])
+            
+            st.info(f"📧 Preview for: **{selected_contact['name']}** ({selected_contact['email']})")
+            
+        else:
+            # Use sample data if no CSV uploaded
+            st.info("📧 Preview with sample data (upload CSV for real names)")
+            preview_html = st.session_state.email_template.replace("{name}", "John Doe")
+        
+        # Display HTML preview in iframe with full height
         st.markdown("---")
+        st.components.v1.html(preview_html, height=650, scrolling=True)
         
-        # Display HTML preview
-        st.components.v1.html(preview_html, height=800, scrolling=True)
-        
-        # Show raw HTML option
-        with st.expander("📝 View HTML Source"):
-            st.code(preview_html, language='html')
-    else:
-        st.warning("⚠️ Please upload a CSV file first in the 'Upload CSV' tab.")
+        # Refresh preview button
+        if st.button("🔄 Refresh Preview", use_container_width=True):
+            st.rerun()
 
 # TAB 3: Send Emails
 with tab3:
@@ -371,8 +433,8 @@ with tab3:
             results = []
             
             for idx, row in df_send.head(send_limit).iterrows():
-                # Prepare personalized email
-                personalized_html = DEFAULT_EMAIL_TEMPLATE.replace("{name}", row['name'])
+                # Use the edited template from session state
+                personalized_html = st.session_state.email_template.replace("{name}", row['name'])
                 
                 # Prepare payload
                 payload = {
